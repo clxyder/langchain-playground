@@ -4,6 +4,7 @@ From: https://langchain.readthedocs.io/en/latest/modules/agents/getting_started.
 Need SerpAPI API key for Google Searches: https://serpapi.com/pricing
 '''
 
+import os
 from configparser import ConfigParser
 
 from langchain.agents import load_tools
@@ -19,10 +20,10 @@ if __name__ == "__main__":
     # Initialize API Key
     config = ConfigParser()
     config.read("config.ini")
-    openai_api_key = config[CONFIG_DEFAULT_KEY][CONFIG_OPENAI_API_KEY]
+    os.environ[CONFIG_OPENAI_API_KEY] = config[CONFIG_DEFAULT_KEY][CONFIG_OPENAI_API_KEY]
 
     # First, let's load the language model we're going to use to control the agent.
-    llm = OpenAI(temperature=0, openai_api_key=openai_api_key)
+    llm = OpenAI(temperature=0)
 
     # Next, let's load some tools to use. Note that the `llm-math` tool uses an LLM, so we need to pass that in.
     tools = load_tools(["serpapi", "llm-math"], llm=llm)
