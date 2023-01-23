@@ -1,8 +1,8 @@
 '''
 From: https://dagster.io/blog/chatgpt-langchain
 '''
+import os
 from configparser import ConfigParser
-from typing import List
 
 import requests
 from langchain.llms import OpenAI
@@ -30,8 +30,8 @@ def get_wiki_data(title: str, first_paragraph_only: bool = False) -> Document:
     )
 
 class WikiChain:
-    def __init__(self, openai_api_key: str, search_index: VectorStore) -> None:
-        self.chain = load_qa_with_sources_chain(OpenAI(temperature=0, openai_api_key = openai_api_key))
+    def __init__(self, search_index: VectorStore) -> None:
+        self.chain = load_qa_with_sources_chain(OpenAI(temperature=0))
         self.search_index = search_index
     
     def print_answer(self, question: str) -> None:
@@ -49,7 +49,7 @@ if __name__ == "__main__":
     # Initialize API Key
     config = ConfigParser()
     config.read("config.ini")
-    openai_api_key = config[CONFIG_DEFAULT_KEY][CONFIG_OPENAI_API_KEY]
+    os.environ[CONFIG_OPENAI_API_KEY] = config[CONFIG_DEFAULT_KEY][CONFIG_OPENAI_API_KEY]
 
     # Generate sources
     wiki_topics = [
@@ -63,23 +63,28 @@ if __name__ == "__main__":
         "Python_(programming_language)",
         "Monty_Python"
     ]
-    sources = [get_wiki_data(x, first_paragraph_only=False) for x in wiki_topics]
+    first_paragraph_only = True
+    sources = [get_wiki_data(x, first_paragraph_only = first_paragraph_only) for x in wiki_topics]
 
-    # chunk the source information to handle large documents
-    source_chunks = []
-    splitter = CharacterTextSplitter(separator=" ", chunk_size=1024, chunk_overlap=0)
-    for source in sources:
-        for chunk in splitter.split_text(source.page_content):
-            source_chunks.append(Document(page_content=chunk, metadata=source.metadata))
+    if first_paragraph_only:
+        search_index: VectorStore = FAISS.from_documents(sources, OpenAIEmbeddings())
+    else:
+        # TODO Implement RateLimitedOpenAIEmbeddings
+        # Chunk the source information to handle large documents
+        source_chunks = []
+        splitter = CharacterTextSplitter(separator=" ", chunk_size=1024, chunk_overlap=0)
+        for source in sources:
+            for chunk in splitter.split_text(source.page_content):
+                source_chunks.append(Document(page_content=chunk, metadata=source.metadata))
 
-    # Improving efficiency using a vector space search engine
-    try:
-        search_index: VectorStore = FAISS.from_documents(source_chunks, OpenAIEmbeddings(openai_api_key = openai_api_key))
-    except Exception as exc:
-        print(exc)
+        # Improving efficiency using a vector space search engine
+        try:
+            search_index: VectorStore = FAISS.from_documents(source_chunks, OpenAIEmbeddings())
+        except Exception as exc:
+            print(exc)
 
     # Initilize Wikipedia chat bot
-    wiki_chain = WikiChain(openai_api_key, search_index)
+    wiki_chain = WikiChain(search_index)
 
     while True:
         question = input("What question would you like to ask the WikiChain bot?\n> ")
