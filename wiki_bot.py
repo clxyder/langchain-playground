@@ -1,3 +1,6 @@
+'''
+From: https://dagster.io/blog/chatgpt-langchain
+'''
 from configparser import ConfigParser
 from typing import List
 
@@ -8,6 +11,7 @@ from langchain.docstore.document import Document
 from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.vectorstores.faiss import FAISS
 from langchain.vectorstores import VectorStore
+from langchain.text_splitter import CharacterTextSplitter
 
 from constants import (
     CONFIG_DEFAULT_KEY,
@@ -59,10 +63,20 @@ if __name__ == "__main__":
         "Python_(programming_language)",
         "Monty_Python"
     ]
-    sources = [get_wiki_data(x, first_paragraph_only=True) for x in wiki_topics]
+    sources = [get_wiki_data(x, first_paragraph_only=False) for x in wiki_topics]
+
+    # chunk the source information to handle large documents
+    source_chunks = []
+    splitter = CharacterTextSplitter(separator=" ", chunk_size=1024, chunk_overlap=0)
+    for source in sources:
+        for chunk in splitter.split_text(source.page_content):
+            source_chunks.append(Document(page_content=chunk, metadata=source.metadata))
 
     # Improving efficiency using a vector space search engine
-    search_index: VectorStore = FAISS.from_documents(sources, OpenAIEmbeddings(openai_api_key = openai_api_key))
+    try:
+        search_index: VectorStore = FAISS.from_documents(source_chunks, OpenAIEmbeddings(openai_api_key = openai_api_key))
+    except Exception as exc:
+        print(exc)
 
     # Initilize Wikipedia chat bot
     wiki_chain = WikiChain(openai_api_key, search_index)
