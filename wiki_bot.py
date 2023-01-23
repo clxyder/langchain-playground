@@ -5,6 +5,9 @@ import requests
 from langchain.llms import OpenAI
 from langchain.chains.qa_with_sources import load_qa_with_sources_chain
 from langchain.docstore.document import Document
+from langchain.embeddings.openai import OpenAIEmbeddings
+from langchain.vectorstores.faiss import FAISS
+from langchain.vectorstores import VectorStore
 
 from constants import (
     CONFIG_DEFAULT_KEY,
@@ -23,15 +26,15 @@ def get_wiki_data(title: str, first_paragraph_only: bool = False) -> Document:
     )
 
 class WikiChain:
-    def __init__(self, config, sources: List[Document]) -> None:
-        self.chain = load_qa_with_sources_chain(OpenAI(temperature=0, openai_api_key = config[CONFIG_DEFAULT_KEY][CONFIG_OPENAI_API_KEY]))
-        self.sources = sources
+    def __init__(self, openai_api_key: str, search_index: VectorStore) -> None:
+        self.chain = load_qa_with_sources_chain(OpenAI(temperature=0, openai_api_key = openai_api_key))
+        self.search_index = search_index
     
     def print_answer(self, question: str) -> None:
         print(
             self.chain(
                 {
-                    "input_documents": self.sources,
+                    "input_documents": self.search_index.similarity_search(question, k=4),
                     "question": question,
                 },
                 return_only_outputs=True,
@@ -42,12 +45,39 @@ if __name__ == "__main__":
     # Initialize API Key
     config = ConfigParser()
     config.read("config.ini")
+    openai_api_key = config[CONFIG_DEFAULT_KEY][CONFIG_OPENAI_API_KEY]
 
-
-    wiki_topics = ["Unix", "Microsoft_Windows", "Linux", "Seinfeld"]
+    # Generate sources
+    wiki_topics = [
+        "Unix",
+        "Microsoft_Windows",
+        "Linux",
+        "Seinfeld",
+        "Matchbox_Twenty",
+        "Roman_Empire",
+        "London",
+        "Python_(programming_language)",
+        "Monty_Python"
+    ]
     sources = [get_wiki_data(x, first_paragraph_only=True) for x in wiki_topics]
-    wiki_chain = WikiChain(config, sources)
+
+    # Improving efficiency using a vector space search engine
+    search_index: VectorStore = FAISS.from_documents(sources, OpenAIEmbeddings(openai_api_key = openai_api_key))
+
+    # Initilize Wikipedia chat bot
+    wiki_chain = WikiChain(openai_api_key, search_index)
 
     while True:
         question = input("What question would you like to ask the WikiChain bot?\n> ")
-        wiki_chain.print_answer(question)
+        try:
+            wiki_chain.print_answer(question)
+        except Exception as exc:
+            print(exc)
+
+'''
+Questions
+- Who were the writers of Seinfeld?
+- What are the main differences between Linux and Windows?
+- What are the differences between Keynesian and classical economics?
+- Which members of Matchbox 20 play guitar?
+'''
