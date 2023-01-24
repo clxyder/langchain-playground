@@ -14,6 +14,7 @@ from langchain.llms import OpenAI
 from constants import (
     CONFIG_DEFAULT_KEY,
     CONFIG_OPENAI_API_KEY,
+    CONFIG_SERPAPI_API_KEY,
 )
 
 if __name__ == "__main__":
@@ -21,6 +22,7 @@ if __name__ == "__main__":
     config = ConfigParser()
     config.read("config.ini")
     os.environ[CONFIG_OPENAI_API_KEY] = config[CONFIG_DEFAULT_KEY][CONFIG_OPENAI_API_KEY]
+    os.environ[CONFIG_SERPAPI_API_KEY] = config[CONFIG_DEFAULT_KEY][CONFIG_SERPAPI_API_KEY]
 
     # First, let's load the language model we're going to use to control the agent.
     llm = OpenAI(temperature=0)
