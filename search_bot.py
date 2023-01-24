@@ -4,25 +4,15 @@ From: https://langchain.readthedocs.io/en/latest/modules/agents/getting_started.
 Need SerpAPI API key for Google Searches: https://serpapi.com/pricing
 '''
 
-import os
-from configparser import ConfigParser
-
 from langchain.agents import load_tools
 from langchain.agents import initialize_agent
 from langchain.llms import OpenAI
 
-from constants import (
-    CONFIG_DEFAULT_KEY,
-    CONFIG_OPENAI_API_KEY,
-    CONFIG_SERPAPI_API_KEY,
-)
+from utils import intialize_api_keys
 
 if __name__ == "__main__":
     # Initialize API Key
-    config = ConfigParser()
-    config.read("config.ini")
-    os.environ[CONFIG_OPENAI_API_KEY] = config[CONFIG_DEFAULT_KEY][CONFIG_OPENAI_API_KEY]
-    os.environ[CONFIG_SERPAPI_API_KEY] = config[CONFIG_DEFAULT_KEY][CONFIG_SERPAPI_API_KEY]
+    intialize_api_keys()
 
     # First, let's load the language model we're going to use to control the agent.
     llm = OpenAI(temperature=0)

@@ -1,8 +1,6 @@
 '''
 From: https://dagster.io/blog/chatgpt-langchain
 '''
-import os
-from configparser import ConfigParser
 
 import requests
 from langchain.llms import OpenAI
@@ -13,10 +11,7 @@ from langchain.vectorstores.faiss import FAISS
 from langchain.vectorstores import VectorStore
 from langchain.text_splitter import CharacterTextSplitter
 
-from constants import (
-    CONFIG_DEFAULT_KEY,
-    CONFIG_OPENAI_API_KEY,
-)
+from utils import intialize_api_keys
 
 
 def get_wiki_data(title: str, first_paragraph_only: bool = False) -> Document:
@@ -47,9 +42,7 @@ class WikiChain:
 
 if __name__ == "__main__":
     # Initialize API Key
-    config = ConfigParser()
-    config.read("config.ini")
-    os.environ[CONFIG_OPENAI_API_KEY] = config[CONFIG_DEFAULT_KEY][CONFIG_OPENAI_API_KEY]
+    intialize_api_keys()
 
     # Generate sources
     wiki_topics = [

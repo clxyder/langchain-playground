@@ -1,20 +1,13 @@
-import os
-from configparser import ConfigParser
 
 from langchain.prompts import PromptTemplate
 from langchain.llms import OpenAI
 from langchain.chains import LLMChain
 
-from constants import (
-    CONFIG_DEFAULT_KEY,
-    CONFIG_OPENAI_API_KEY,
-)
+from utils import intialize_api_keys
 
 if __name__ == "__main__":
     # Initialize API Key
-    config = ConfigParser()
-    config.read("config.ini")
-    os.environ[CONFIG_OPENAI_API_KEY] = config[CONFIG_DEFAULT_KEY][CONFIG_OPENAI_API_KEY]
+    intialize_api_keys()
 
     # Initialize OpenAI LLM model and prompt template
     llm = OpenAI(temperature=0.9)
