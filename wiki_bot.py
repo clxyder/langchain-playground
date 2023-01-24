@@ -1,5 +1,11 @@
 '''
 From: https://dagster.io/blog/chatgpt-langchain
+
+Questions
+- Who were the writers of Seinfeld?
+- What are the main differences between Linux and Windows?
+- What are the differences between Keynesian and classical economics?
+- Which members of Matchbox 20 play guitar?
 '''
 
 import requests
@@ -85,11 +91,3 @@ if __name__ == "__main__":
             wiki_chain.print_answer(question)
         except Exception as exc:
             print(exc)
-
-'''
-Questions
-- Who were the writers of Seinfeld?
-- What are the main differences between Linux and Windows?
-- What are the differences between Keynesian and classical economics?
-- Which members of Matchbox 20 play guitar?
-'''
