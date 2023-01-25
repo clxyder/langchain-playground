@@ -1,3 +1,6 @@
+'''
+from: https://langchain.readthedocs.io/en/latest/modules/chains/getting_started.html
+'''
 
 from langchain.prompts import PromptTemplate
 from langchain.llms import OpenAI
