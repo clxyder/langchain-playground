@@ -22,6 +22,9 @@ if __name__ == "__main__":
     utils.intialize_api_keys()
 
     llm = OpenAI(temperature=0)
+
+    # we can also pass previous buffer and store to continue from a save point
+    # memory=ConversationEntityMemory(llm=llm, buffer=buffer, store=store)
     conversation = ConversationChain(
         llm=llm, 
         # verbose=True,
