@@ -10,7 +10,7 @@ Conversation Prompt
 - What do you know about Sam?
 '''
 
-from pprint import pprint
+import os
 
 from langchain import OpenAI, ConversationChain
 from langchain.chains.conversation.memory import ConversationEntityMemory
@@ -18,18 +18,28 @@ from langchain.chains.conversation.prompt import ENTITY_MEMORY_CONVERSATION_TEMP
 
 import utils
 
+ENTITY_BUFFER_FILE = "entity_buffer.json"
+ENTITY_STORE_FILE = "entity_store.json"
+
 if __name__ == "__main__":
     utils.intialize_api_keys()
 
     llm = OpenAI(temperature=0)
 
     # we can also pass previous buffer and store to continue from a save point
-    # memory=ConversationEntityMemory(llm=llm, buffer=buffer, store=store)
+    if os.path.exists(ENTITY_BUFFER_FILE) and os.path.exists(ENTITY_STORE_FILE):
+        buffer = utils.load_json(ENTITY_BUFFER_FILE)
+        store = utils.load_json(ENTITY_STORE_FILE)
+        memory=ConversationEntityMemory(llm=llm, buffer=buffer, store=store)
+    else:
+        memory=ConversationEntityMemory(llm=llm)
+
+    # intialize conversation chain
     conversation = ConversationChain(
         llm=llm, 
         # verbose=True,
         prompt=ENTITY_MEMORY_CONVERSATION_TEMPLATE,
-        memory=ConversationEntityMemory(llm=llm)
+        memory=memory
     )
 
     try:
@@ -37,5 +47,5 @@ if __name__ == "__main__":
             user_input = input("USER: ")
             print(f"AI: {conversation.predict(input = user_input)}")
     except KeyboardInterrupt:
-        pprint(conversation.memory.buffer)
-        pprint(conversation.memory.store)
+        utils.save_json(ENTITY_BUFFER_FILE, conversation.memory.buffer)
+        utils.save_json(ENTITY_STORE_FILE, conversation.memory.store)
