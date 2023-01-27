@@ -91,12 +91,12 @@ class ConversationEntityMemory(Memory, BaseModel):
         else:
             output_key = self.output_key
 
+        # create summarization chain
+        chain = LLMChain(llm=self.llm, prompt=self.entity_summarization_prompt)
+
         # query LLM summary for each entity
         # TODO only update relevant entities?
         for entity in self.entity_cache:
-            # TODO do we need to re-create the LLMChain for each entity?
-            chain = LLMChain(llm=self.llm, prompt=self.entity_summarization_prompt)
-
             # get key value store for entity
             existing_summary = self.store.get(entity, "")
 

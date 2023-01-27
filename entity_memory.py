@@ -13,26 +13,28 @@ Conversation Prompt
 import os
 
 from langchain import OpenAI, ConversationChain
-from langchain.chains.conversation.memory import ConversationEntityMemory
 from langchain.chains.conversation.prompt import ENTITY_MEMORY_CONVERSATION_TEMPLATE
 
 import utils
+import memory
 
 ENTITY_BUFFER_FILE = "entity_buffer.json"
 ENTITY_STORE_FILE = "entity_store.json"
 
 if __name__ == "__main__":
+    # initialize API keys
     utils.intialize_api_keys()
 
+    # initialize large language model
     llm = OpenAI(temperature=0)
 
     # we can also pass previous buffer and store to continue from a save point
     if os.path.exists(ENTITY_BUFFER_FILE) and os.path.exists(ENTITY_STORE_FILE):
         buffer = utils.load_json(ENTITY_BUFFER_FILE)
         store = utils.load_json(ENTITY_STORE_FILE)
-        memory=ConversationEntityMemory(llm=llm, buffer=buffer, store=store)
+        memory = memory.ConversationEntityMemory(llm=llm, buffer=buffer, store=store)
     else:
-        memory=ConversationEntityMemory(llm=llm)
+        memory = memory.ConversationEntityMemory(llm=llm)
 
     # intialize conversation chain
     conversation = ConversationChain(
