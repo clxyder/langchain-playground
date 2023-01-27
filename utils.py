@@ -13,8 +13,8 @@ def intialize_api_keys():
     config = ConfigParser()
     config.read("config.ini")
     default_config = config[CONFIG_DEFAULT_KEY]
-    os.environ[CONFIG_OPENAI_API_KEY] = default_config[CONFIG_OPENAI_API_KEY]
-    os.environ[CONFIG_SERPAPI_API_KEY] = default_config[CONFIG_SERPAPI_API_KEY]
+    os.environ[CONFIG_OPENAI_API_KEY] = default_config.get(CONFIG_OPENAI_API_KEY, "")
+    os.environ[CONFIG_SERPAPI_API_KEY] = default_config.get(CONFIG_SERPAPI_API_KEY, "")
 
 def load_json(filepath: str) -> str:
     with open(filepath, 'r', encoding='utf-8') as infile:
