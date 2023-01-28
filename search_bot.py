@@ -21,6 +21,7 @@ if __name__ == "__main__":
     tools = load_tools(["serpapi", "llm-math"], llm=llm)
 
     # Finally, let's initialize an agent with the tools, the language model, and the type of agent we want to use.
+    # internally calls AgentExecutor.from_agent_and_tools
     agent = initialize_agent(tools, llm, agent="zero-shot-react-description", verbose=True)
 
     # Now let's test it out!
